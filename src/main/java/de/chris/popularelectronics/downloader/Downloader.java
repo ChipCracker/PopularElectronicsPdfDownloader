@@ -25,8 +25,48 @@ public class Downloader {
 	   
 		
 	}
-	
 	public void download() {
+		FileHandler fh;  
+
+	    try {  
+
+	        // This block configure the logger with handler and formatter  
+	        fh = new FileHandler("./download.log");  
+	        logger.addHandler(fh);
+	        SimpleFormatter formatter = new SimpleFormatter();  
+	        fh.setFormatter(formatter);  
+
+	        // the following statement is used to log any messages  
+	        logger.info("My first log");  
+
+	    } catch (SecurityException e) {  
+	        e.printStackTrace();  
+	    } catch (IOException e) {  
+	        e.printStackTrace();  
+	    }  
+		
+		String magazineName = "Pop";
+		String[] centuries= {"1950","1960","1970","1980","1990","2000"};
+		String[] years = generateYearArray();
+		String[] months = {"01", "02","03","04","05", "06", "07","08","09","10","11","12"};
+		
+		File download = new File("./downloads");
+		download.mkdir();
+		
+		for(String century : centuries) {
+			for(String year : years) {
+				for(String month: months) {
+					int centuryInt= Integer.valueOf(century);
+					int yearInt = Integer.valueOf(year);
+					if(centuryInt == 1950 && yearInt < 4) {
+						continue;
+					} 
+					downloadEdition(century, century.substring(2,3)+year, month, magazineName);
+				}
+			}
+		}
+	}
+	public void downloadAsync() {
 		
 
 	    FileHandler fh;  
@@ -65,7 +105,7 @@ public class Downloader {
 					if(centuryInt == 1950 && yearInt < 4) {
 						continue;
 					} 
-					doDownloadEdition(pool, century, century.substring(2,3)+year, month, magazineName);
+					doAsyncDownloadEdition(pool, century, century.substring(2,3)+year, month, magazineName);
 				}
 			}
 		}
@@ -85,7 +125,7 @@ public class Downloader {
 		return yearArray;
 	}
 	
-	private void doDownloadEdition(ExecutorService pool, final String century, final String year, final String month, final String magazineName) {
+	private void doAsyncDownloadEdition(ExecutorService pool, final String century, final String year, final String month, final String magazineName) {
 		// Irgendwas Asynchrones machen
 		Runnable r= new Runnable() {
 		    public void run() {
@@ -139,7 +179,7 @@ public class Downloader {
 		try {
 			BufferedInputStream in = new BufferedInputStream(new URL(episodeUrl).openStream());
 			@SuppressWarnings("resource")
-			FileOutputStream fos = new FileOutputStream("./downloads/POP"+year+month+".pdf");
+			FileOutputStream fos = new FileOutputStream("./downloads/Popular-Electronics Ausgabe_"+year+"-"+month+".pdf");
 			byte dataBuffer[] = new byte[1024];
 		    int bytesRead;
 		    while ((bytesRead = in.read(dataBuffer, 0, 1024)) != -1) {
